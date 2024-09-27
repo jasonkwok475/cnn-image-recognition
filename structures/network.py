@@ -4,4 +4,4 @@ class Network:
   learning_rate = 0.001
 
   def init(self, learning_rate):
-    self.learning_rate = learning_rate
+    self.learning_rate = learning_rate *2

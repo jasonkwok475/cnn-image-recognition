@@ -5,12 +5,12 @@ from collections.abc import Generator
 class ConvLayer:
   padding = 1 #valid padding
 
-  def __init__(self, input_tensor, kernel_size, output_channels):
-    self.input_tensor = input_tensor
+  def __init__(self, kernel_size, output_channels):
     self.kernel_size = kernel_size
     self.output_channels = output_channels
 
-    self.kernel = np.random.randn(output_channels, kernel_size, kernel_size) / 9 #double check what 9 does, xavier initialization?
+    #Initializes a filter for each output_channel with size kernel_size, (9 -> xavier initialization)
+    self.kernels = np.random.randn(output_channels, kernel_size, kernel_size) / 9 
 
   #image is an n x n array
   def getRegions(self, image) -> Generator:
@@ -19,19 +19,22 @@ class ConvLayer:
     """
     h, w = image.shape
 
-    for i in range(h - self.padding*2):
-      for j in range(w - self.padding*2):
-        #Generates n - 2 m x m arrays of regions, where m = kernel size
+    for i in range(h - self.padding * 2):
+      for j in range(w - self.padding * 2):
+        #Generates (n - 2)^2 m x m arrays of regions, where m = kernel size
         yield image[i:(i + self.kernel_size), j:(j + self.kernel_size)], i, j
 
   def propagate(self, input):
+    """
+    Generate an output for the convulutional layer 
+    """
     h, w = input.shape
     
     # Create an empty output array with zeros
-    output = np.zeros((h - self.padding*2, w - self.padding*2, self.output_channels))
+    output = np.zeros((h - self.padding * 2, w - self.padding * 2, self.output_channels))
 
     for region, i, j in self.getRegions(input):
-      output[i, j] = np.sum(region * self.kernel) #not finished here
+      output[i, j] = np.sum(region * self.kernels, axis=(1,2)) 
 
     return output
 

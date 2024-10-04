@@ -6,7 +6,7 @@ class MaxPool2:
     """
     Yields the 2x2 pooling regions
     """
-    h, w = image.shape
+    h, w, _ = image.shape
 
     for i in range(h // 2):
       for j in range(w // 2) :
@@ -18,7 +18,7 @@ class MaxPool2:
     - input is a 3d numpy array
     """
     h, w, output_channels = input.shape
-    output = np.zeros((h //2, w // 2, output_channels))
+    output = np.zeros((h // 2, w // 2, output_channels))
 
     for region, i, j in self.getRegions(input):
       output[i, j] = np.amax(region, axis=(0,1))

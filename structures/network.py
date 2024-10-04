@@ -1,6 +1,11 @@
 #https://towardsdatascience.com/gentle-dive-into-math-behind-convolutional-neural-networks-79a07dd44cf9
 import numpy as np
 from conv import ConvLayer
+
+#!Combine all these into a general conv.py class
+from conv1 import ConvLayer1
+from conv2 import ConvLayer2
+
 from maxpool import MaxPool2
 from fclayer import FCLayer
 
@@ -16,31 +21,27 @@ class Network:
     self.conv1_outputs = conv1_outputs
     self.conv2_outputs = conv2_outputs
 
-    self.layers = Layers(
-      ConvLayer(self.kernel_size, conv1_outputs),
+    self.layers = Layers([
+      ConvLayer1(self.kernel_size, conv1_outputs),
       MaxPool2(),
-      ConvLayer(self.kernel_size, conv2_outputs),
+      ConvLayer2(self.kernel_size, conv2_outputs, conv1_outputs),
       MaxPool2(),
-      FCLayer(20, conv2_outputs, "ReLU"),
-      FCLayer(10, 20, "Softmax")
-    )
+      FCLayer(20, conv2_outputs, "ReLU", True),
+      FCLayer(10, 20, "Softmax", False)])
+    
+    print("MNIST CNN Initialized")
 
   def propagate(self, input):
-    output = self.layers.conv1.propagate(input)
-    output = self.layers.pool1.propagate(output)
-    output = self.layers.conv2.propagate(output)
-    output = self.layers.pool2.propagate(output)
-    output = self.layers.fclayer1.propagate(output.flatten())
-    output = self.layers.fclayer2.propagate(output)
-
-    return output
+    return self.layers.propagate(input)
 
 
 class Layers:
-  def __init__(self, conv1, pool1, conv2, pool2, fc1, fc2):
-    self.conv1 = conv1
-    self.pool1 = pool1
-    self.conv2 = conv2
-    self.pool2 = pool2
-    self.fclayer1 = fc1
-    self.fclayer2 = fc2
+  def __init__(self, layers):
+    self._layers = layers
+
+  def propagate(self, input):
+    output = input
+    for layer in self._layers:
+      output = layer.propagate(output)
+
+    return output

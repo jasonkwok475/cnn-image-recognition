@@ -37,3 +37,6 @@ class ConvLayer1:
       output[i, j] = np.sum(region * self.kernels, axis=(1,2)) 
 
     return output
+
+  def backprop(self, gradient, learning_rate):
+    return 0

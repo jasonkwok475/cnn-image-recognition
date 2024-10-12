@@ -1,13 +1,13 @@
 #https://towardsdatascience.com/gentle-dive-into-math-behind-convolutional-neural-networks-79a07dd44cf9
 import numpy as np
-from conv import ConvLayer
+from structures.conv import ConvLayer
 
-#!Combine all these into a general conv.py class
-from conv1 import ConvLayer1
-from conv2 import ConvLayer2
+#!Combine all these into a general conv.py class in version 2
+from structures.conv1 import ConvLayer1
+from structures.conv2 import ConvLayer2
 
-from maxpool import MaxPool2
-from fclayer import FCLayer
+from structures.maxpool import MaxPool2
+from structures.fclayer import FCLayer
 
 class Network:
   learning_rate = 0.001
@@ -31,9 +31,38 @@ class Network:
     
     print("MNIST CNN Initialized")
 
-  def propagate(self, input):
-    return self.layers.propagate(input)
+  def propagate(self, input, label):
+    #add cross entropy here
+    output =  self.layers.propagate(input)
+    loss = -np.log(output[label])
+    acc = 1 if np.argmax(output) == label else 0
 
+    return output, loss, acc #probability outputs, cross entropy loss, accuracy
+  
+  def train(self, x_train, y_train):
+    loss = 0
+    correct = 0
+    i = 0
+    num, h, w = x_train.shape
+
+    for i in range(num):
+      output, l, acc = self.propagate(x_train[i], y_train[i])
+      loss += l
+      correct += acc
+
+      self.layers.backprop(output, y_train[i], self.learning_rate)
+      #label = y_train[i]
+
+      if i % 100 == 99:
+        print(
+          '[Step %d] Past 100 steps: Average Loss %.3f | Accuracy: %d%%' %
+          (i + 1, loss / 100, correct))
+        loss = 0
+        correct = 0
+
+      i += 1
+
+    return
 
 class Layers:
   def __init__(self, layers):
@@ -45,3 +74,16 @@ class Layers:
       output = layer.propagate(output)
 
     return output
+  
+  def backprop(self, output, label, learning_rate):
+    
+    #Initial gradients
+    gradient = np.zeros(10)
+    gradient[label] = -1 / output[label]
+
+    for layer in reversed(self._layers):
+      #Layer receives dL/douput and returns dL/dinput
+      gradient = layer.backprop(gradient, learning_rate)
+
+    #Backprop is weight = weight - learning rate * output * error (from partial derivatives dL/dweight, where L is the cross entropy loss (output))
+    return

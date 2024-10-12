@@ -25,4 +25,5 @@ class MaxPool2:
 
     return output
 
-
+  def backprop(self, gradient, learning_rate):
+    return 0

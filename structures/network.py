@@ -9,6 +9,10 @@ from structures.conv2 import ConvLayer2
 from structures.maxpool import MaxPool2
 from structures.fclayer import FCLayer
 
+#Ignore overflow warnings from numpy
+np.seterr( over='ignore' )
+#https://stackoverflow.com/questions/23128401/overflow-error-in-neural-networks-implementation
+
 class Network:
   learning_rate = 0.001
   kernel_size = 5
@@ -26,7 +30,7 @@ class Network:
       MaxPool2(),
       ConvLayer2(self.kernel_size, conv2_outputs, conv1_outputs),
       MaxPool2(),
-      FCLayer(20, conv2_outputs, "ReLU", True),
+      FCLayer(20, conv2_outputs, "Sigmoid", True),
       FCLayer(10, 20, "Softmax", False)])
     
     print("MNIST CNN Initialized")
@@ -80,8 +84,10 @@ class Layers:
     #Initial gradients
     gradient = np.zeros(10)
     gradient[label] = -1 / output[label]
-
+    i = 0
     for layer in reversed(self._layers):
+      # if i > 0: return
+      # i += 1
       #Layer receives dL/douput and returns dL/dinput
       gradient = layer.backprop(gradient, learning_rate)
 

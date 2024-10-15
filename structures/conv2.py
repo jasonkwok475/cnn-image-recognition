@@ -31,6 +31,8 @@ class ConvLayer2:
     """
     h, w, _ = input.shape
     
+    self.last_input = input
+
     # Create an empty output array with zeros
     output = np.zeros((h - self.padding * 2 - self.kernel_size + 1, w - self.padding * 2 - self.kernel_size + 1, self.output_channels))
 
@@ -43,5 +45,35 @@ class ConvLayer2:
 
     return output
   
-  def backprop(self, gradient, learning_rate):
-    return 0
+  def getArrayRegions(self, image, shape):
+    h, w, _ = image.shape
+    h1, w2, _ = shape
+
+    for i in range(h - self.padding * 2 - h1):
+      for j in range(w - self.padding * 2 - w2):
+        #Generates (n - 2)^2 m x m x n2 arrays of regions, where m = kernel size
+        yield image[i:(i + h1), j:(j + w2)], i, j
+
+  
+  def backprop(self, dL_dout, learning_rate):
+
+    dL_dkernel = np.zeros(self.kernels.shape)
+    dL_dinput = np.zeros(self.last_input.shape)
+
+    for region, i, j in self.getRegions(self.last_input):
+      for f in range(self.kernel_size):
+        dL_dkernel[f] += dL_dout[i, j, f] * region
+
+        #print(self.kernels[f])
+        #print(np.pad(self.kernels[f], [(2, 2), (2, 2), (0, 0)], mode='constant', constant_values=0))
+      
+    
+    filters = np.rot90(self.kernels, 2).reshape(10, 5, 5, 20)
+    num, _, _, _ = filters.shape
+    pad = self.kernel_size - 1
+    for k in range(num):
+      for region_k, i_k, j_k, in self.getArrayRegions(np.rot90(np.pad(filters[k], [(pad, pad), (pad, pad), (0, 0)], mode='constant', constant_values=0), 2), dL_dout.shape):
+        dL_dinput[i_k, j_k, k] = np.sum(region_k * dL_dout, axis=(0,1,2)) 
+
+    self.kernels -= learning_rate * dL_dkernel
+    return dL_dinput

@@ -29,7 +29,9 @@ class ConvLayer1:
     Generate an output for the convulutional layer 
     """
     h, w = input.shape
-    
+
+    self.last_input = input
+
     # Create an empty output array with zeros
     output = np.zeros((h - self.padding * 2 - self.kernel_size + 1, w - self.padding * 2 - self.kernel_size + 1, self.output_channels))
 
@@ -38,5 +40,14 @@ class ConvLayer1:
 
     return output
 
-  def backprop(self, gradient, learning_rate):
-    return 0
+  def backprop(self, dL_dout, learning_rate):
+
+    dL_dkernel = np.zeros(self.kernels.shape)
+
+    for region, i, j in self.getRegions(self.last_input):
+      for f in range(self.kernel_size):
+        dL_dkernel[f] += dL_dout[i, j, f] * region
+
+    self.kernels -= learning_rate * dL_dkernel
+
+    return None

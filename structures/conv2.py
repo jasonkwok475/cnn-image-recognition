@@ -67,8 +67,10 @@ class ConvLayer2:
         #print(self.kernels[f])
         #print(np.pad(self.kernels[f], [(2, 2), (2, 2), (0, 0)], mode='constant', constant_values=0))
       
-    
-    filters = np.rot90(self.kernels, 2).reshape(10, 5, 5, 20)
+    #!double check that this actually transforms the kernel correctly 
+    #https://deeplearning.cs.cmu.edu/F21/document/recitation/Recitation5/CNN_Backprop_Recitation_5_F21.pdf
+
+    filters = np.rot90(self.kernels, 2).reshape(10, 5, 5, 20) #! change this to reshape dynamically
     num, _, _, _ = filters.shape
     pad = self.kernel_size - 1
     for k in range(num):

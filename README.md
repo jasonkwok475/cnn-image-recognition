@@ -8,8 +8,10 @@
 Custom Convolutional Neural Network (CNN) made from scratch
 
 ## Dependencies
-- Python v3.12
+- Python v3.12.X
 - numpy v1.26.4
+- PyQt5 v5.15.9
+- pyqtgraph v0.13.7
 
 <!-- ## Features -->
 

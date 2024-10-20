@@ -1,6 +1,9 @@
 #https://towardsdatascience.com/gentle-dive-into-math-behind-convolutional-neural-networks-79a07dd44cf9
 import numpy as np
+import math
 from structures.conv import ConvLayer
+from PyQt5.QtCore import pyqtSignal, QObject
+from collections import namedtuple
 
 #!Combine all these into a general conv.py class in version 2
 from structures.conv1 import ConvLayer1
@@ -13,11 +16,17 @@ from structures.fclayer import FCLayer
 np.seterr( over='ignore' )
 #https://stackoverflow.com/questions/23128401/overflow-error-in-neural-networks-implementation
 
-class Network:
+class Network(QObject):
   learning_rate = 0.001
   kernel_size = 5
 
-  def __init__(self, learning_rate, conv1_outputs, conv2_outputs):
+  log = pyqtSignal(str)
+  training = pyqtSignal(int, float, float)
+
+  def __init__(self):
+    super(QObject, self).__init__()
+
+  def init(self, learning_rate, conv1_outputs, conv2_outputs):
     #How fast the network will learn
     self.learning_rate = learning_rate
     
@@ -33,7 +42,7 @@ class Network:
       FCLayer(20, conv2_outputs, "Sigmoid", True),
       FCLayer(10, 20, "Softmax", False)])
     
-    print("MNIST CNN Initialized")
+    self.log.emit("MNIST CNN Initialized")
 
   def propagate(self, input, label):
     #add cross entropy here
@@ -43,7 +52,7 @@ class Network:
 
     return output, loss, acc #probability outputs, cross entropy loss, accuracy
   
-  def train(self, x_train, y_train):
+  def train(self, update_ui, x_train, y_train):
     loss = 0
     correct = 0
     i = 0
@@ -58,15 +67,20 @@ class Network:
       #label = y_train[i]
 
       if i % 100 == 99:
-        print(
+        progress = math.ceil((i+1)/num*100)
+        update_ui(percent=progress)
+
+        self.log.emit( 
           '[Step %d] Past 100 steps: Average Loss %.3f | Accuracy: %d%%' %
           (i + 1, loss / 100, correct))
+        self.training.emit(i + 1, loss / 100, correct)
         loss = 0
         correct = 0
 
       i += 1
 
-    return
+    self.log.emit("Network has finished training.")
+    return 0
 
 class Layers:
   def __init__(self, layers):

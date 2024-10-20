@@ -63,18 +63,17 @@ class ConvLayer2:
     for region, i, j in self.getRegions(self.last_input):
       for f in range(self.kernel_size):
         dL_dkernel[f] += dL_dout[i, j, f] * region
-
-        #print(self.kernels[f])
-        #print(np.pad(self.kernels[f], [(2, 2), (2, 2), (0, 0)], mode='constant', constant_values=0))
       
     #!double check that this actually transforms the kernel correctly 
     #https://deeplearning.cs.cmu.edu/F21/document/recitation/Recitation5/CNN_Backprop_Recitation_5_F21.pdf
 
     filters = np.rot90(self.kernels, 2).reshape(10, 5, 5, 20) #! change this to reshape dynamically
+    #filters = np.rot90(self.kernels, 2).swapaxes(0, 3) 
+
     num, _, _, _ = filters.shape
     pad = self.kernel_size - 1
     for k in range(num):
-      for region_k, i_k, j_k, in self.getArrayRegions(np.rot90(np.pad(filters[k], [(pad, pad), (pad, pad), (0, 0)], mode='constant', constant_values=0), 2), dL_dout.shape):
+      for region_k, i_k, j_k, in self.getArrayRegions(np.pad(filters[k], [(pad, pad), (pad, pad), (0, 0)], mode='constant', constant_values=0), dL_dout.shape):
         dL_dinput[i_k, j_k, k] = np.sum(region_k * dL_dout, axis=(0,1,2)) 
 
     self.kernels -= learning_rate * dL_dkernel

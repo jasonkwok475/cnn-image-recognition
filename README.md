@@ -17,6 +17,7 @@ Custom Convolutional Neural Network (CNN) made from scratch
 - [ ] Add interactive window 
 - [ ] Add graphs for visualizing accuracy and learning
 - [ ] Optimize and debug backpropagation
+- [ ] Add a way to save/reload weights from previous training sessions
 
 <!--
 ## Acknowledgements

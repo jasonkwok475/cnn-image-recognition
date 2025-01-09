@@ -15,13 +15,14 @@ from structures.fclayer import FCLayer
 #Ignore overflow warnings from numpy
 np.seterr( over='ignore' )
 #https://stackoverflow.com/questions/23128401/overflow-error-in-neural-networks-implementation
+#https://stackoverflow.com/questions/48540589/sigmoid-runtimewarning-overflow-encountered-in-exp
 
 class Network(QObject):
   learning_rate = 0.001
   kernel_size = 5
 
   log = pyqtSignal(str)
-  training = pyqtSignal(int, float, float)
+  progress = pyqtSignal(int, float, float)
 
   def __init__(self):
     super(QObject, self).__init__()
@@ -56,6 +57,7 @@ class Network(QObject):
     loss = 0
     correct = 0
     i = 0
+    updateInterval = 100
     num, h, w = x_train.shape
 
     for i in range(num):
@@ -66,14 +68,14 @@ class Network(QObject):
       self.layers.backprop(output, y_train[i], self.learning_rate)
       #label = y_train[i]
 
-      if i % 100 == 99:
+      if i % updateInterval == updateInterval - 1:
         progress = math.ceil((i+1)/num*100)
         update_ui(percent=progress)
 
         self.log.emit( 
           '[Step %d] Past 100 steps: Average Loss %.3f | Accuracy: %d%%' %
           (i + 1, loss / 100, correct))
-        self.training.emit(i + 1, loss / 100, correct)
+        self.progress.emit(updateInterval, loss / 100, correct)
         loss = 0
         correct = 0
 

@@ -6,7 +6,6 @@ def main():
   app = QApplication(sys.argv)
   ex = MainWindow()
   ex.show()
-  ex.initStructures()
   
   sys.exit(app.exec_())
 

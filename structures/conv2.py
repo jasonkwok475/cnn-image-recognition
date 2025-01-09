@@ -66,8 +66,9 @@ class ConvLayer2:
       
     #!double check that this actually transforms the kernel correctly 
     #https://deeplearning.cs.cmu.edu/F21/document/recitation/Recitation5/CNN_Backprop_Recitation_5_F21.pdf
-
-    filters = np.rot90(self.kernels, 2).reshape(10, 5, 5, 20) #! change this to reshape dynamically
+#Change all weights arrays to np.float64
+#https://medium.com/@ngocson2vn/a-gentle-explanation-of-backpropagation-in-convolutional-neural-network-cnn-1a70abff508b
+    filters = np.rot90(np.rot90(self.kernels.reshape(10, 5, 5, 20), 2, axes=(0,1)), 2, axes=(1,2)) #! change this to reshape dynamically
     #filters = np.rot90(self.kernels, 2).swapaxes(0, 3) 
 
     num, _, _, _ = filters.shape
